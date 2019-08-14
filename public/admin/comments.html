@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="utf-8">
   <title>Comments &laquo; Admin</title>
@@ -9,6 +10,7 @@
   <link rel="stylesheet" href="../assets/css/admin.css">
   <script src="../assets/vendors/nprogress/nprogress.js"></script>
 </head>
+
 <body>
   <script>NProgress.start()</script>
 
@@ -25,7 +27,7 @@
         <h1>所有评论</h1>
       </div>
       <div class="page-action">
-        <ul class="pagination pagination-sm pull-right">
+        <ul class="pagination pagination-sm pull-right" id="pageBox">
           <li><a href="#">上一页</a></li>
           <li><a href="#">1</a></li>
           <li><a href="#">2</a></li>
@@ -122,6 +124,37 @@
 
   <script src="../assets/vendors/jquery/jquery.js"></script>
   <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
+  <script src="../assets/vendors/art-template/template-web.js"></script>
+  <!--文章列表模板 -->
+  <script type="text/html" id="commentsTep">
+    {{each records}}
+    <tr class="danger">
+        <td>{{$value.author.nickName}}</td>
+        <td>{{$value.content}}</td>
+        <td>{{$value.post.title}}</td>
+        <td>{{$value.createAt}}</td>
+        <td>{{$value.state == 0 ? '未审核' : '已批准'}}</td>
+        <td class="text-center" data-id="{{$value._id}}">
+          <a href="post-add.html" class="btn btn-info btn-xs status" data-status="{{$value.state}}">{{$value.state == 0 ? '批准' : '驳回'}}</a>
+          <a href="javascript:;" class="btn btn-danger btn-xs delete">删除</a>
+        </td>
+      </tr>
+      {{/each}}
+  </script>
+  <!-- 文章页面模板 -->
+  <script type="text/html" id="pageTep">
+    {{if page > 1}}
+    <li><a href="javascript:;" onclick="changePage({{page - 1}})">上一页</a></li>
+    {{/if}}
+    {{each display}}
+    <li class="{{$value == page ? 'active' : ''}}"><a href="javascript:;" onclick="changePage({{$value}})">{{$value}}</a></li>
+    {{/each}}
+    {{if page < pages}}
+    <li><a href="javascript:;" onclick="changePage({{page - 0 + 1}})">下一页</a></li>
+    {{/if}}
+  </script>
+  <script src="../assets/js/comments.js"></script>
   <script>NProgress.done()</script>
 </body>
+
 </html>

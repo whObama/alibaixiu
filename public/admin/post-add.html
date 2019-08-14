@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="utf-8">
   <title>Add new post &laquo; Admin</title>
@@ -9,6 +10,7 @@
   <link rel="stylesheet" href="../assets/css/admin.css">
   <script src="../assets/vendors/nprogress/nprogress.js"></script>
 </head>
+
 <body>
   <script>NProgress.start()</script>
 
@@ -32,11 +34,12 @@
         <div class="col-md-9">
           <div class="form-group">
             <label for="title">标题</label>
-            <input id="title" class="form-control input-lg" name="title" type="text" placeholder="文章标题">
+            <input id="title" class="form-control input-lg" name="title" type="text" placeholder="文章标题" >
           </div>
           <div class="form-group">
             <label for="content">标题</label>
-            <textarea id="content" class="form-control input-lg" name="content" cols="30" rows="10" placeholder="内容"></textarea>
+            <textarea id="content" class="form-control input-lg" name="content" cols="30" rows="10"
+              placeholder="内容"></textarea>
           </div>
         </div>
         <div class="col-md-3">
@@ -45,7 +48,7 @@
             <!-- show when image chose -->
             <img class="help-block thumbnail" style="display: none" id="preview">
             <input id="feature" class="form-control" name="feature" type="file">
-            <input type="hidden" name="thumbnail" id="thumbnail" >
+            <input type="hidden" name="thumbnail" id="thumbnail">
           </div>
           <div class="form-group">
             <label for="category">所属分类</label>
@@ -67,6 +70,7 @@
           </div>
           <div class="form-group">
             <button class="btn btn-primary" type="button" id="postBtn">保存</button>
+            <button class="btn btn-primary" type="button" id="edit" style="display: none;">修改</button>
           </div>
         </div>
       </form>
@@ -124,14 +128,14 @@
     $.ajax({
       url: '/categories',
       type: 'get',
-      success: function(res) {
-        let html = template('postTep', {list: res});
+      success: function (res) {
+        let html = template('postTep', { list: res });
         $('#category').html(html);
       }
     });
-    
+
     //文件上传功能
-    $('#feature').on('change', function() {
+    $('#feature').on('change', function () {
       //设置formdata对象
       let formdata = new FormData();
       //获取文件信息
@@ -145,7 +149,7 @@
         processData: false,
         //告诉ajax不要解析参数类型
         contentType: false,
-        success: function(res) {
+        success: function (res) {
           //将图片信息保存到文本域里,保存到数据集合
           $('#thumbnail').val(res[0].file);
           $('#preview').attr('src', res[0].file).show();
@@ -154,7 +158,7 @@
     });
 
     //用户创建文章功能
-    $('#postBtn').on('click', function() {
+    $('#postBtn').on('click', function () {
       //获取表单信息
       let formdata = $('#postForm').serialize();
       //向服务器发送请求
@@ -162,12 +166,87 @@
         type: 'post',
         url: '/posts',
         data: formdata,
-        success: function(){
+        success: function () {
           location.href = '/admin/posts.html';
         }
       })
-    })
+    });
+
+    //根据id完成用户修改功能
+    //获取地址栏的id参数
+    var id = getUrlParams('id');
+    if (id != -1) {
+      $.ajax({
+        type: 'get',
+        url: '/posts/' + id,
+        success: function(res) {
+          // console.log(res);
+          
+          $('.page-title > h1').html('修改文章');
+          $('#postBtn').hide();
+          $('#edit').show();
+          //将文章 标题 内容 时间显示出来
+          $('#title').val(res.title);
+          $('#content').val(res.content);
+          $('#state').val(res.state);
+          $('#created').val(res.createAt && res.createAt.substr(0,16));
+          //获取 #category下的option
+          let options = $('#category > option');
+          options.each(function (index, item) {
+            //将item转换为jquery对象
+            if ($(item).attr('value') == res.category) {
+              $(item).prop('selected', true);
+            }
+          });
+
+          let soptions = $('#status > option');
+          soptions.each(function (index, item) {
+            //将item转换为jquery对象
+            if ($(item).attr('value') == res.state) {
+              $(item).prop('selected', true);
+            }
+          });
+
+          //将图片的地址设置到隐藏域
+          $('#thumbnail').val(res.thumbnail);
+          //显示图片
+          $('#preview').attr('src', res.thumbnail).show();
+        }
+      })
+    }
+
+    //从地址栏获取参数
+    function getUrlParams(name) {
+      var paramsAry = location.search.substr(1).split('&');
+      //  console.log(paramsAry);
+      //循环数据
+      for (var i = 0; i < paramsAry.length; i++) {
+        var tmp = paramsAry[i].split('=');
+        //  console.log(tmp);
+        if (tmp[0] == name) {
+          return tmp[1];
+        }
+      }
+      return -1;
+    };
+
+    //给修改按按钮添加点击事件
+    $('#edit').on('click', function() {
+      //获取表单信息
+      let formdata = $('#postForm').serialize();
+      //向服务器发送请求
+      $.ajax({
+        type: 'put',
+        url: '/posts/' + id,
+        data: formdata,
+        success: function () {
+          location.href = '/admin/posts.html';
+        }
+      })
+    });
+
   </script>
   <script>NProgress.done()</script>
 </body>
+
 </html>
